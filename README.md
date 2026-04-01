@@ -104,7 +104,7 @@ You **cannot** edit your way to a legendary. The tool brute-forces an identity t
 
 | | | | |
 |---|---|---|---|
-| 🦆 duck | 🪿 goose | 🫧 blob | 🐱 cat |
+| 🦆 duck | 🦢 goose | 🫧 blob | 🐱 cat |
 | 🐉 dragon | 🐙 octopus | 🦉 owl | 🐧 penguin |
 | 🐢 turtle | 🐌 snail | 👻 ghost | 🦎 axolotl |
 | 🦫 capybara | 🌵 cactus | 🤖 robot | 🐰 rabbit |
