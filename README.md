@@ -130,6 +130,10 @@ oauthAccount?.accountUuid  ??  userID  ??  "anon"
 
 This tool handles it by brute-forcing a **UUID** (not a hex string) and setting it directly as `accountUuid`. This is more reliable than removing `accountUuid`, because the OAuth flow can re-add it.
 
+### Why the Brute-Forced UUID Sticks
+
+If the config's `oauthAccount` already has `billingType`, `accountCreatedAt`, and `subscriptionCreatedAt`, the OAuth startup flow **skips the profile fetch entirely** (early return). This means it never overwrites our brute-forced `accountUuid` — as long as those three fields are present, the value we set is preserved across restarts.
+
 ### Why Previous Approaches Failed
 
 | Approach | Problem |
