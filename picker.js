@@ -322,12 +322,19 @@ function quickMode() {
 
   if (args.includes("--verify")) {
     banner();
+    const { mismatch } = showRuntimeInfo();
+    console.log();
+
+    if (mismatch) {
+      console.log(`  ${c.red}Refusing to verify — runtime does not match Claude install.${c.reset}\n`);
+      process.exit(1);
+    }
+
     const id = args[args.indexOf("--verify") + 1];
     if (id && id !== "auto") {
       const roll = fullRoll(id);
       showRollResult(roll, id, id.includes("-") ? "uuid" : "hex");
     } else {
-      showRuntimeInfo();
       showCurrentBuddy();
     }
     return true;
@@ -372,13 +379,15 @@ async function main() {
 
   banner();
   const { mismatch } = showRuntimeInfo();
-  showCurrentBuddy();
 
   if (mismatch) {
+    console.log();
     console.log(`  ${c.red}Refusing to proceed — runtime does not match Claude install.${c.reset}`);
     console.log(`  ${c.dim}Fix the mismatch above and re-run.${c.reset}\n`);
     process.exit(1);
   }
+
+  showCurrentBuddy();
 
   const rl = createRL();
 
