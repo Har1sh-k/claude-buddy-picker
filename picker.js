@@ -1,4 +1,4 @@
-#!/usr/bin/env bun
+#!/usr/bin/env node
 // picker.js — Interactive Claude Code buddy picker
 // Pick your companion. Don't leave it to chance.
 //
@@ -64,20 +64,20 @@ function showRuntimeInfo() {
   console.log(`  ${c.dim}Install:${c.reset}  ${install.method} ${install.path ? `(${install.path})` : ""}`);
   console.log(`  ${c.dim}Config:${c.reset}   ${getConfigPath()}`);
 
-  // Warn on runtime/install mismatch
-  if (install.method === "native" && rt.runtime !== "bun") {
+  // Check runtime/install mismatch
+  const mismatch = (install.method === "native" && rt.runtime !== "bun")
+    || (install.method === "npm" && rt.runtime === "bun");
+
+  if (mismatch) {
+    const isNative = install.method === "native";
     console.log();
-    console.log(`  ${c.bgYellow}${c.bold} WARNING ${c.reset} Your Claude Code is the ${c.bold}native binary${c.reset} (uses Bun.hash),`);
-    console.log(`  but this tool is running under ${c.bold}Node${c.reset} (uses FNV-1a).`);
+    console.log(`  ${c.red}${c.bold} MISMATCH ${c.reset} Your Claude Code is ${isNative ? "the native binary (Bun.hash)" : "an npm install (FNV-1a)"},`);
+    console.log(`  but this tool is running under ${c.bold}${rt.runtime}${c.reset} (${isNative ? "FNV-1a" : "Bun.hash"}).`);
     console.log(`  Brute-forced IDs will produce the ${c.red}wrong buddy${c.reset}.`);
-    console.log(`  Run with: ${c.cyan}bun picker.js${c.reset}`);
-  } else if (install.method === "npm" && rt.runtime === "bun") {
-    console.log();
-    console.log(`  ${c.bgYellow}${c.bold} WARNING ${c.reset} Your Claude Code is an ${c.bold}npm install${c.reset} (uses FNV-1a),`);
-    console.log(`  but this tool is running under ${c.bold}Bun${c.reset} (uses Bun.hash).`);
-    console.log(`  Brute-forced IDs will produce the ${c.red}wrong buddy${c.reset}.`);
-    console.log(`  Run with: ${c.cyan}node picker.js${c.reset}`);
+    console.log(`  Run with: ${c.cyan}${isNative ? "bun" : "node"} picker.js${c.reset}`);
   }
+
+  return { mismatch };
 }
 
 function showCurrentBuddy() {
@@ -341,8 +341,13 @@ function quickMode() {
       return true;
     }
     banner();
-    showRuntimeInfo();
+    const { mismatch } = showRuntimeInfo();
     console.log();
+
+    if (mismatch) {
+      console.log(`  ${c.red}Refusing to proceed — runtime does not match Claude install.${c.reset}\n`);
+      process.exit(1);
+    }
 
     const max = parseInt(args[args.indexOf("--quick") + 2]) || 500000;
     console.log(`  ${c.bold}Quick pick:${c.reset} ${SPECIES_EMOJI[species]} legendary ${species}\n`);
@@ -366,8 +371,14 @@ async function main() {
   if (quickMode()) return;
 
   banner();
-  showRuntimeInfo();
+  const { mismatch } = showRuntimeInfo();
   showCurrentBuddy();
+
+  if (mismatch) {
+    console.log(`  ${c.red}Refusing to proceed — runtime does not match Claude install.${c.reset}`);
+    console.log(`  ${c.dim}Fix the mismatch above and re-run.${c.reset}\n`);
+    process.exit(1);
+  }
 
   const rl = createRL();
 
