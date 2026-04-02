@@ -63,12 +63,28 @@ function showRuntimeInfo() {
   console.log(`  ${c.dim}Runtime:${c.reset}  ${rt.runtime} ${rt.version}  →  ${hashLabel}`);
   console.log(`  ${c.dim}Install:${c.reset}  ${install.method} ${install.path ? `(${install.path})` : ""}`);
   console.log(`  ${c.dim}Config:${c.reset}   ${getConfigPath()}`);
+
+  // Warn on runtime/install mismatch
+  if (install.method === "native" && rt.runtime !== "bun") {
+    console.log();
+    console.log(`  ${c.bgYellow}${c.bold} WARNING ${c.reset} Your Claude Code is the ${c.bold}native binary${c.reset} (uses Bun.hash),`);
+    console.log(`  but this tool is running under ${c.bold}Node${c.reset} (uses FNV-1a).`);
+    console.log(`  Brute-forced IDs will produce the ${c.red}wrong buddy${c.reset}.`);
+    console.log(`  Run with: ${c.cyan}bun picker.js${c.reset}`);
+  } else if (install.method === "npm" && rt.runtime === "bun") {
+    console.log();
+    console.log(`  ${c.bgYellow}${c.bold} WARNING ${c.reset} Your Claude Code is an ${c.bold}npm install${c.reset} (uses FNV-1a),`);
+    console.log(`  but this tool is running under ${c.bold}Bun${c.reset} (uses Bun.hash).`);
+    console.log(`  Brute-forced IDs will produce the ${c.red}wrong buddy${c.reset}.`);
+    console.log(`  Run with: ${c.cyan}node picker.js${c.reset}`);
+  }
 }
 
 function showCurrentBuddy() {
-  const config = readConfig();
+  const { config, error } = readConfig();
   if (!config) {
-    console.log(`  ${c.dim}Buddy:${c.reset}    ${c.red}No config found${c.reset}`);
+    const msg = error === "parse" ? "Config is invalid JSON" : "No config found";
+    console.log(`  ${c.dim}Buddy:${c.reset}    ${c.red}${msg}${c.reset}`);
     return;
   }
 
@@ -253,6 +269,9 @@ async function pickFlow(rl) {
     const res = applyBuddy(result.id, result.mode);
     if (res.success) {
       console.log(`\n  ${c.green}${c.bold}Applied!${c.reset} Restart Claude Code and run ${c.cyan}/buddy${c.reset} to hatch.`);
+      if (res.backupPath) {
+        console.log(`  ${c.dim}Backup: ${res.backupPath}${c.reset}`);
+      }
 
       const persist = await ask(rl, `\n  ${c.cyan}Setup persistence (survive re-logins)? [Y/n]:${c.reset} `);
       if (persist.trim().toLowerCase() !== "n") {
@@ -369,10 +388,10 @@ async function main() {
         case "3":
           showCurrentBuddy();
           break;
-        case "4":
-          const config = readConfig();
-          if (config) {
-            const { id, source } = getActiveIdentity(config);
+        case "4": {
+          const { config: cfg } = readConfig();
+          if (cfg) {
+            const { id, source } = getActiveIdentity(cfg);
             if (source === "accountUuid") {
               showPersistenceInstructions(id);
             } else {
@@ -380,6 +399,7 @@ async function main() {
             }
           }
           break;
+        }
         case "5":
         case "q":
         case "":

@@ -36,7 +36,9 @@ function claude {
             Write-Host "[buddy-picker] identity locked" -ForegroundColor Green
         }
     } catch {}
-    & "`$env:USERPROFILE\.local\bin\claude.exe" @args
+    `$claudePath = (Get-Command claude -ErrorAction SilentlyContinue).Source
+    if (-not `$claudePath) { `$claudePath = "`$env:USERPROFILE\.local\bin\claude.exe" }
+    & `$claudePath @args
 }
 # --- End Claude Buddy Picker ---
 "@

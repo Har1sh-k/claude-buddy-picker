@@ -19,7 +19,29 @@ RCFILE="$HOME/.bashrc"
 
 BLOCK="
 # --- Claude Buddy Picker: auto-fix companion identity ---
-alias claude='node -e \"const f=require(\\\"os\\\").homedir()+\\\"/.claude.json\\\";const T=\\\"${TARGET_UUID}\\\";try{const c=JSON.parse(require(\\\"fs\\\").readFileSync(f));if(c.oauthAccount?.accountUuid!==T){c.oauthAccount=c.oauthAccount||{};c.oauthAccount.accountUuid=T;delete c.companion;require(\\\"fs\\\").writeFileSync(f,JSON.stringify(c,null,2));console.log(\\\"[buddy-picker] identity locked\\\")}}catch{}\" && command claude'
+claude() {
+  local RT
+  if command -v bun > /dev/null 2>&1; then RT=bun;
+  elif command -v node > /dev/null 2>&1; then RT=node;
+  fi
+  if [ -n \"\$RT\" ]; then
+    \$RT -e \"
+      const f=require('os').homedir()+'/.claude.json';
+      const T='${TARGET_UUID}';
+      try{
+        const c=JSON.parse(require('fs').readFileSync(f));
+        if(c.oauthAccount?.accountUuid!==T){
+          c.oauthAccount=c.oauthAccount||{};
+          c.oauthAccount.accountUuid=T;
+          delete c.companion;
+          require('fs').writeFileSync(f,JSON.stringify(c,null,2));
+          console.log('[buddy-picker] identity locked');
+        }
+      }catch{}
+    \"
+  fi
+  command claude \"\$@\"
+}
 # --- End Claude Buddy Picker ---"
 
 # Remove old block if present

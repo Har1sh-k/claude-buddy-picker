@@ -19,7 +19,7 @@ Hash function:   FNV-1a (32-bit)                Bun.hash() → Wyhash
 Result:          ❌ Wrong buddy                 ✅ Correct buddy
 ```
 
-**This tool auto-detects your runtime and uses the correct hash function.**
+**This tool uses the hash function of whatever runtime executes it.** Run it under `bun` for native Claude Code installs (most users), or `node` for npm installs. It warns you if your runtime doesn't match your Claude Code install.
 
 ## Quick Start
 

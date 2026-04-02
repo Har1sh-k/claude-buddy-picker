@@ -29,10 +29,12 @@ fi
 BLOCK="
 # --- Claude Buddy Picker: auto-fix companion identity ---
 claude() {
-  local f=\"\$HOME/.claude.json\"
-  local target=\"${TARGET_UUID}\"
-  if command -v node > /dev/null 2>&1; then
-    node -e \"
+  local RT
+  if command -v bun > /dev/null 2>&1; then RT=bun;
+  elif command -v node > /dev/null 2>&1; then RT=node;
+  fi
+  if [ -n \"\$RT\" ]; then
+    \$RT -e \"
       const f=require('os').homedir()+'/.claude.json';
       const T='${TARGET_UUID}';
       try{

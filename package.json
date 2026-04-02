@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Pick your Claude Code companion. Don't leave it to chance.",
   "main": "picker.js",
+  "bin": {
+    "buddy-picker": "picker.js"
+  },
   "scripts": {
     "start": "bun picker.js",
     "pick": "bun picker.js",
